@@ -1,24 +1,51 @@
-# PTSD Template
+# Pacman-Style 2D Game (C++17)
 
-This is a [PTSD](https://github.com/ntut-open-source-club/practical-tools-for-simple-design) framework template for students taking OOPL2024s.
+A Pacman-style arcade game with five stages, built in C++17 on [PTSD](https://github.com/ntut-open-source-club/practical-tools-for-simple-design), an OpenGL-based framework used in the Object-Oriented Programming Lab course at National Taipei University of Technology (Spring 2024). Team project of two.
 
-## Quick Start
+## Features
 
-1. Use this template to create a new repository
-   ![github screenshot](https://github.com/ntut-rick/ptsd-template/assets/126899559/ef62242f-03ed-481d-b858-12b730c09beb)
+- Five stages, each defined in a JSON file (`Resources/Text/level00X.json`)
+- Ghosts that switch between behavior states and chase the player using BFS pathfinding
+- Score, lives and fruit systems, with high scores saved per stage
+- Event manager that lets game systems react to events without depending on each other
 
-2. Clone your repository
+## My contributions
 
-   ```bash
-   git clone YOUR_GIT_URL --recursive
-   ```
+- **Map:** building the tile map the player and ghosts move on
+- **Score, lives and fruit systems**
+- **Event manager:** an Observer-pattern design where systems register `std::function` listeners and are notified when an event fires, so score and life updates stay decoupled from the game loop
+- **BFS pathfinding:** wrote the first part of the ghost pathfinding; my teammate completed it
 
-3. Build your project
+## Controls
 
-  > [!WARNING]
-  > Please build your project in `Debug` because our `Release` path is broken D:
-   
-   ```sh
-   cmake -DCMAKE_BUILD_TYPE=Debug -B build # -G Ninja
-   ```
-   better read [PTSD README](https://github.com/ntut-open-source-club/practical-tools-for-simple-design)
+| Key | Action |
+| --- | --- |
+| Mouse click | Press the start button on the title screen |
+| Arrow keys | Move |
+| Esc | Return to the menu / quit |
+| Space | Toggle debug mode |
+
+## Build and run
+
+Requirements: CMake 3.16+, a C++17 compiler, and Git.
+
+```bash
+git clone --recursive https://github.com/JXDouDou/OOPL.git
+cd OOPL
+cmake -DCMAKE_BUILD_TYPE=Debug -B build
+cmake --build build
+```
+
+Build in `Debug`; the framework's `Release` resource path does not work. The executable is created in `build/`. If you cloned without `--recursive`, run `git submodule update --init` first.
+
+## Project structure
+
+```
+include/
+  Level/        stages, player, ghosts and their states
+  event/        event manager (Observer pattern)
+  UI/           title screen and buttons
+src/            app entry point and main loop
+Resources/      images and stage/score JSON files
+PTSD/           framework (git submodule)
+```
