@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(REPLACE_WITH_YOUR_PROJECT_NAME)
+project(Pacman)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -27,11 +27,38 @@ else()
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic)
 endif()
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+# PORTABLE=ON: build a distributable exe that loads Resources/ and assets/
+# from the folder next to it (relative paths) instead of the source tree.
+option(PORTABLE "Use relative resource paths and copy resources next to the executable" OFF)
+
+if(PORTABLE)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE RESOURCE_DIR="Resources")
+
+    # Override PTSD's absolute PTSD_ASSETS_DIR without editing the PTSD submodule.
+    get_target_property(PTSD_DEFS PTSD COMPILE_DEFINITIONS)
+    list(FILTER PTSD_DEFS EXCLUDE REGEX "^PTSD_ASSETS_DIR=")
+    list(APPEND PTSD_DEFS PTSD_ASSETS_DIR="assets")
+    set_target_properties(PTSD PROPERTIES COMPILE_DEFINITIONS "${PTSD_DEFS}")
+
+    # Copy game resources and the shaders PTSD needs next to the executable.
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_SOURCE_DIR}/Resources $<TARGET_FILE_DIR:${PROJECT_NAME}>/Resources
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_SOURCE_DIR}/PTSD/assets/shaders $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets/shaders
+    )
+
+    # No console window when launched by double-click.
+    set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE ON)
+
+    # MinGW: link libstdc++/libgcc/winpthread statically so no runtime DLLs are needed.
+    if(MINGW)
+        target_link_options(${PROJECT_NAME} PRIVATE -static)
+    endif()
+elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(${PROJECT_NAME} PRIVATE RESOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Resources")
 else()
-    message(FATAL_ERROR "relative RESOURCE_DIR is WIP, Please use `-DCMAKE_BUILD_TYPE=Debug` build for now.")
-    # target_compile_definitions(${PROJECT_NAME} PRIVATE RESOURCE_DIR="${CMAKE_INSTALL_PREFIX}/Resources")
+    message(FATAL_ERROR "Non-Debug builds need -DPORTABLE=ON (relative resource paths).")
 endif()
 
 target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${DEPENDENCY_INCLUDE_DIRS})
