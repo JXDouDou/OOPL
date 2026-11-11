@@ -27,16 +27,32 @@ A Pacman-style arcade game with five stages, built in C++17 on [PTSD](https://gi
 
 ## Build and run
 
-Requirements: CMake 3.16+, a C++17 compiler, and Git.
+Requirements: CMake 3.16+, a C++17 compiler, and Git. Dependencies (SDL2, GLEW, etc.) are downloaded automatically on the first configure. Tested on Windows with MinGW-w64 GCC 13.1 and Ninja.
 
 ```bash
 git clone --recursive https://github.com/JXDouDou/OOPL.git
 cd OOPL
-cmake -DCMAKE_BUILD_TYPE=Debug -B build
+```
+
+If you cloned without `--recursive`, run `git submodule update --init` first.
+
+### Distributable build (Release)
+
+```bash
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DPORTABLE=ON
 cmake --build build
 ```
 
-Build in `Debug`; the framework's `Release` resource path does not work. The executable is created in `build/`. If you cloned without `--recursive`, run `git submodule update --init` first.
+`PORTABLE=ON` makes the game load resources by relative path and copies `Resources/` and `assets/` next to `build/Pacman.exe`. Copy `Pacman.exe` together with those two folders to run it on another PC; with MinGW the runtime is statically linked, so no DLLs are needed. Start it from its own folder (e.g. by double-clicking), since paths are relative to the working directory.
+
+### Development build (Debug)
+
+```bash
+cmake -B build-debug -DCMAKE_BUILD_TYPE=Debug
+cmake --build build-debug
+```
+
+Resources are read directly from the source tree. Non-Debug builds require `-DPORTABLE=ON`.
 
 ## Project structure
 
